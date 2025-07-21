@@ -21,29 +21,8 @@ if ($_SESSION["level"] != 1 and $_SESSION["level"] != 2) {
 
 $title = "Daftar Barang";
 include 'layout/header.php';
-
-
-if (isset($_POST['filter'])) {
-  $tgl_awal = strip_tags($_POST['tanggalawal'] . " 00:00:00 ");
-  $tgl_akhir = strip_tags($_POST['tanggalakhir'] . " 23:59:59 ");
-
-  //query untuk filter data
-  $data_barang = select("SELECT * FROM barang WHERE tanggal BETWEEN '$tgl_awal' AND '$tgl_akhir' ORDER BY id_barang DESC");
-  $halamanAktif = 1;
-  $jumlahHalaman = 1;
-
-} else {
-  //query tampil data dengan pagination
-  $jumlahDataPerHalaman = 3;
-  $jumlahData = count(select("SELECT * FROM barang"));
-  $jumlahHalaman = ceil($jumlahData / $jumlahDataPerHalaman);
-  $halamanAktif = (isset($_GET['halaman'])) ? $_GET['halaman'] : 1;
-  $awalData = ($jumlahDataPerHalaman * $halamanAktif) - $jumlahDataPerHalaman;
-
-  $data_barang = select("SELECT * FROM barang ORDER BY id_barang DESC LIMIT $awalData, $jumlahDataPerHalaman");
-}
-
-
+// Ambil data barang dari database
+$data_barang = select("SELECT * FROM barang ORDER BY id_barang DESC");
 ?>
 
 <!-- Content Wrapper. Contains page content -->
@@ -53,12 +32,15 @@ if (isset($_POST['filter'])) {
     <div class="container-fluid">
       <div class="row mb-2">
         <div class="col-sm-6">
-          <h1 class="m-0">Dashboard</h1>
+          
+          <h1 class="m-0"><i class="nav-icon fas fa-box"></i>
+           <b>Data Barang</b>
+          </h1>
         </div><!-- /.col -->
         <div class="col-sm-6">
           <ol class="breadcrumb float-sm-right">
             <li class="breadcrumb-item"><a href="#">Home</a></li>
-            <li class="breadcrumb-item active">Dashboard v1</li>
+            <li class="breadcrumb-item active">Barang</li>
           </ol>
         </div><!-- /.col -->
       </div><!-- /.row -->
@@ -144,11 +126,10 @@ if (isset($_POST['filter'])) {
                 </div>
                 <!-- /.card-header -->
                 <div class="card-body">
-                  <a href="tambah-barang.php" class="btn btn-primary btn-sm mb-2"><i class="fas fa-plus"></i> Tambah
-                    Barang</a>
-
-                  <button type="button" class="btn btn-success btn-sm mb-2" data-toggle="modal"
+                  <a href="tambah-barang.php" class="btn btn-primary btn-sm mb-2"><i class="fas fa-plus"></i> Tambah Barang</a>
+                    <button type="button" class="btn btn-success btn-sm mb-2" data-toggle="modal"
                     data-target="#modalfilter"><i class="fas fa-search"></i> Filter Data</button>
+
 
                   <table class="table table-bordered table-hover">
                     <thead>
@@ -190,39 +171,23 @@ if (isset($_POST['filter'])) {
                       <?php endforeach; ?>
                     </tbody>
                   </table>
-
+                  
                   <div class="mt-2 justify-content-end d-flex">
-                    <nav aria-label="Page navigation example">
-                      <ul class="pagination">
-                        <?php if ($halamanAktif > 1): ?>
-                          <li class="page-item">
-                            <a class="page-link" href="?halaman=<?= $halamanAktif - 1 ?>" aria-label="Previous">
-                              <span aria-hidden="true">&laquo;</span>
-                            </a>
-                          </li>
-                        <?php endif; ?>
-
-                        <?php for ($i = 1; $i <= $jumlahHalaman; $i++): ?>
-                          <?php if ($i == $halamanAktif): ?>
-                            <li class="page-item active"><a class="page-link" href="?halaman=<?= $i; ?>"><?= $i; ?></a></li>
-                          <?php else: ?>
-                            <li class="page-item"><a class="page-link" href="?halaman=<?= $i; ?>"><?= $i; ?></a></li>
-                          <?php endif; ?>
-                        <?php endfor; ?>
-
-                        <?php if ($halamanAktif < $jumlahHalaman): ?>
-                          <li class="page-item">
-                            <a class="page-link" href="?halaman=<?= $halamanAktif + 1 ?>" aria-label="Next">
-                              <span aria-hidden="true">&raquo;</span>
-                            </a>
-                          </li>
-                        <?php endif; ?>
-
-
-                      </ul>
-                    </nav>
-                  </div>
-
+                  <nav aria-label="Page navigation example">
+  <ul class="pagination">
+    <li class="page-item">
+      <a class="page-link" href="#" aria-label="Previous">
+        <span aria-hidden="true">&laquo;</span>
+      </a>
+    </li>
+    <li class="page-item"><a class="page-link" href="#">1</a></li>
+    <li class="page-item">
+      <a class="page-link" href="#" aria-label="Next">
+        <span aria-hidden="true">&raquo;</span>
+      </a>
+    </li>
+  </ul>
+</nav>
                 </div>
                 <!-- /.card-body -->
               </div>
@@ -235,38 +200,6 @@ if (isset($_POST['filter'])) {
       </section>
       <!-- /.content -->
     </div>
-
-    <!-- Modal Filter -->
-    <div class="modal fade" id="modalfilter" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header bg-success">
-            <h5 class="modal-title" id="exampleModalLabel"><i class="fas fa-search"></i> Filter Data</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-                aria-hidden="true">&times;</span></button>
-          </div>
-          <div class="modal-body">
-            <form action="" method="post">
-              <div class="mb-3">
-                <label for="tanggalawal" class="form-label">tanggal Awal</label>
-                <input type="date" class="form-control" id="tanggalawal" name="tanggalawal" required>
-              </div>
-
-              <div class="mb-3">
-                <label for="tanggalakhir" class="form-label">tanggal Akhir</label>
-                <input type="date" class="form-control" id="tanggalakhir" name="tanggalakhir" required>
-              </div>
-
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-                <button type="submit" name="filter" class="btn btn-success">Submit</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
     <!-- /.content-wrapper -->
     <?php include 'layout/footer.php'; ?>
-
 </div>
